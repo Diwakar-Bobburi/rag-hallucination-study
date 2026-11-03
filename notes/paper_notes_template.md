@@ -151,11 +151,45 @@ Link: https://arxiv.org/abs/2005.11401  (NeurIPS 2020, Facebook AI / UCL / NYU)
     statement for my paper: cheaper, works with any API model.
 
 
-    
+  ## Corrective Retrieval Augmented Generation (Yan et al., 2024)
+**Link:** https://arxiv.org/abs/2401.15884
+
+- **Problem:** RAG trusts whatever the retriever returns. When retrieval is wrong or
+  irrelevant, the generator builds its answer on bad evidence and hallucinates.
+  Nothing in standard RAG checks retrieval quality before generating.
+
+- **Method:** Add a lightweight "retrieval evaluator" (a small fine-tuned T5 model)
+  that scores how relevant the retrieved documents are to the question, then acts
+  on one of three confidence levels:
+  - Correct: keep the documents, but refine them: split into small strips and drop
+    irrelevant strips ("decompose-then-recompose").
+  - Incorrect: throw the documents away and use web search instead.
+  - Ambiguous: combine refined documents and web search results.
+  Plug-and-play: works on top of standard RAG and Self-RAG without retraining them.
+
+- **Data:** PopQA (short-form QA), Biography (long-form generation), PubHealth
+  (fact checking), ARC-Challenge (reasoning).
+
+- **Key results:** Improved both standard RAG and Self-RAG across all four tasks,
+  showing that checking retrieval quality before generation makes RAG more robust,
+  especially when retrieval is poor.
+
+- **Limitation:** The evaluator must be fine-tuned. The web search fallback adds
+  latency and cost, and web results can themselves be unreliable. Extra components
+  make the pipeline more complex.
+
+- **Useful for my project:**
+  - Direct support for my core idea: retrieval quality should be checked before
+    trusting the answer.
+  - My fix is a simpler, training-free variant: use the cross-encoder reranker's
+    score as the retrieval confidence signal (no fine-tuned evaluator), and abstain
+    ("I don't know") instead of falling back to web search.
+  - Clear comparison point for the paper: CRAG corrects retrieval; I measure how
+    much simply refusing on low confidence reduces hallucination, and at what cost
+    to accuracy.
 ## Reading list
 - [X] Lewis et al. 2020 — Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks
 - [X] Liu et al. 2023 — Lost in the Middle
 - [X] Es et al. 2023 — RAGAS
 - [X] Asai et al. 2023 — Self-RAG
-- [ ] Yan et al. 2024 — Corrective Retrieval Augmented Generation
-- [ ] Niu et al. 2024 — RAGTruth
+- [X] Niu et al. 2024 — RAGTruth

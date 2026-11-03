@@ -111,10 +111,51 @@ Link: https://arxiv.org/abs/2005.11401  (NeurIPS 2020, Facebook AI / UCL / NYU)
     paper itself shows LLM judges are imperfect.
   - "Hallucination rate" = share of answers with at least one unsupported statement.
 
+
+
+## Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection (Asai et al., 2023)
+**Link:** https://arxiv.org/abs/2310.11511  (University of Washington / AI2 / IBM; ICLR 2024)
+
+- **Problem:** Standard RAG always retrieves a fixed number of passages, even when
+  retrieval isn't needed or the passages are irrelevant, and never checks whether its
+  answer is actually supported by them. This can lower quality and cause hallucination.
+
+- **Method:** Train the model to "reflect" on its own process using special
+  reflection tokens it generates alongside the text:
+  - Retrieve: should I retrieve for this part? (yes / no / continue)
+  - IsRel: is this retrieved passage relevant?
+  - IsSup: is my output fully / partially / not supported by the passage?
+  - IsUse: how useful is my output overall? (1–5)
+  Training: a critic model (trained on GPT-4 labels) inserts these tokens into training
+  data; then the generator (Llama 2, 7B and 13B) is fine-tuned on that data.
+  Inference: the model retrieves only when needed, generates candidate segments for
+  several passages, and picks the best one using its own reflection scores.
+
+- **Data:** Short-form QA (PopQA, TriviaQA), fact checking (PubHealth), reasoning
+  (ARC-Challenge), long-form generation with citations (biographies, ASQA).
+
+- **Key results:** Outperformed ChatGPT and retrieval-augmented Llama 2-chat on
+  most tasks. Clear gains in factuality and in citation accuracy for long-form
+  outputs. Reflection weights let users trade off fluency against strict support.
+
+- **Limitation:** Requires fine-tuning a model, so it can't be applied to API-only
+  models. Relies on GPT-4-generated labels for training. Outputs can still contain
+  unsupported claims.
+
+- **Useful for my project:**
+  - Strong evidence that "decide when to trust retrieval" and "check support" reduce
+    hallucination.
+  - IsSup is essentially the faithfulness check I am measuring.
+  - My Step 7 fix is a training-free, prompt-only version of this idea (abstain when
+    retrieval confidence is low + force citations). This is a clear positioning
+    statement for my paper: cheaper, works with any API model.
+
+
+    
 ## Reading list
 - [X] Lewis et al. 2020 — Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks
 - [X] Liu et al. 2023 — Lost in the Middle
 - [X] Es et al. 2023 — RAGAS
-- [ ] Asai et al. 2023 — Self-RAG
+- [X] Asai et al. 2023 — Self-RAG
 - [ ] Yan et al. 2024 — Corrective Retrieval Augmented Generation
 - [ ] Niu et al. 2024 — RAGTruth

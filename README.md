@@ -31,7 +31,7 @@ All settings live in `config.py`.
 
 ## Status
 - [x] Step 1: Setup
-- [ ] Step 2: Literature review
+- [X] Step 2: Literature review
 - [ ] Step 3: Data
 - [ ] Step 4: Retrievers
 - [ ] Step 5: Generation

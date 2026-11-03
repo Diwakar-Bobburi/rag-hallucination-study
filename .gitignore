@@ -7,6 +7,8 @@ venv/
 data/*.json
 data/*.jsonl
 data/*.faiss
+data/*.npy
+results/retrieved_*.json
 results/*.jsonl
 !data/.gitkeep
 !results/.gitkeep

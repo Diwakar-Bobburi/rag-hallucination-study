@@ -10,7 +10,14 @@ DATASET = "hotpotqa/hotpot_qa"
 DATASET_CONFIG = "distractor"
 SPLIT = "validation"
 N_QUESTIONS = 500
+# Paragraphs from this many EXTRA questions are added to the corpus as noise only
+# (never asked). Makes retrieval harder and more realistic than 10 passages/question.
+N_NOISE_QUESTIONS = 1500
 SEED = 42
+
+QUESTIONS_FILE = DATA_DIR / "questions.json"
+CORPUS_FILE = DATA_DIR / "corpus.json"
+STATS_FILE = DATA_DIR / "stats.json"
 
 # Retrieval
 EMBED_MODEL = "BAAI/bge-small-en-v1.5"

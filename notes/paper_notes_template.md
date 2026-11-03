@@ -74,10 +74,47 @@ Link: https://arxiv.org/abs/2005.11401  (NeurIPS 2020, Facebook AI / UCL / NYU)
   - Supports using a reranker that puts the most relevant chunk first.
   - Justifies keeping top-k small (5) rather than dumping 20+ chunks into the prompt.
 
+
+  ## RAGAS: Automated Evaluation of Retrieval Augmented Generation (Es et al., 2023)
+**Link:** https://arxiv.org/abs/2309.15217  (Cardiff University / Exploding Gradients; EACL 2024 demo track)
+
+- **Problem:** Evaluating RAG systems usually needs human-written reference answers,
+  which are slow and expensive to create. We need automatic, reference-free metrics
+  that check both the retrieval and the generation steps.
+
+- **Method:** Three metrics, each computed by prompting an LLM:
+  - Faithfulness: does the answer stick to the retrieved context?
+    1. LLM splits the answer into short, standalone statements.
+    2. LLM checks each statement: can it be inferred from the context? (yes/no)
+    3. Score = supported statements / total statements.
+  - Answer relevance: does the answer address the question?
+    LLM generates possible questions from the answer; score = average embedding
+    similarity between those and the original question.
+  - Context relevance: is the retrieved context focused?
+    LLM extracts only the sentences needed to answer; score = needed / total sentences.
+
+- **Data:** WikiEval, a small dataset the authors built from 50 Wikipedia pages
+  (created after the LLM's training cutoff), with human judgements of answer and
+  context quality.
+
+- **Key results:** RAGAS scores agreed with human judgements better than simple
+  baselines (e.g. asking an LLM for a direct 1–10 score). Agreement was strongest for
+  faithfulness and weakest for context relevance.
+
+- **Limitation:** The judge is itself an LLM, so it can make mistakes or be biased.
+  WikiEval is small. Results depend on the judge model and the exact prompts used.
+
+- **Useful for my project:**
+  - My faithfulness metric = this 3-step method, run with my own judge model and
+    prompts, which I will document fully in the paper.
+  - Must validate the judge against my manual labels on ~100 answers, since the
+    paper itself shows LLM judges are imperfect.
+  - "Hallucination rate" = share of answers with at least one unsupported statement.
+
 ## Reading list
 - [X] Lewis et al. 2020 — Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks
 - [X] Liu et al. 2023 — Lost in the Middle
-- [ ] Es et al. 2023 — RAGAS
+- [X] Es et al. 2023 — RAGAS
 - [ ] Asai et al. 2023 — Self-RAG
 - [ ] Yan et al. 2024 — Corrective Retrieval Augmented Generation
 - [ ] Niu et al. 2024 — RAGTruth

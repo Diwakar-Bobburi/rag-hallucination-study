@@ -34,4 +34,18 @@ LLM_MODELS = [
     "qwen/qwen3.8-27b",
 ]
 TEMPERATURE = 0.0
-MAX_TOKENS = 512   # both models reason before answering, so leave room
+# Both models "think" before answering; the budget must cover thinking + answer.
+MAX_TOKENS = 2048
+# Extra per-model settings to keep thinking short. If Groq rejects one, the script
+# drops it automatically and prints a warning.
+MODEL_PARAMS = {
+    "openai/gpt-oss-20b": {"reasoning_effort": "low"},
+    "qwen/qwen3.8-27b": {"reasoning_effort": "none"},
+    "openai/gpt-oss-120b": {"reasoning_effort": "low"},
+}
+
+# Evaluation (Step 6)
+# Judge = a larger model with its own Groq daily limit, separate from the two
+# models being tested. Limitation to note in the paper: it shares a family with
+# gpt-oss-20b (possible self-preference bias); can be swapped for Gemini later.
+JUDGE_MODEL = "gemini-3.6-flash"

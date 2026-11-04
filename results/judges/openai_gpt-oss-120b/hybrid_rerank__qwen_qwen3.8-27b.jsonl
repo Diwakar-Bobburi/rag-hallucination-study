@@ -1,0 +1,9 @@
+{"qid": "5a7a567255429941d65f25bd", "label": "supported", "reason": "Context states he was part of the flotilla that attacked the radar station in Dwarka, which is on the western shore of the Okhamandal Peninsula.", "judged_by": "openai/gpt-oss-120b"}
+{"qid": "5abca1a55542993a06baf937", "label": "supported", "reason": "Context states Tivoli Gardens opened on 15 August 1843, which is the park where the concert hall is located.", "judged_by": "openai/gpt-oss-120b"}
+{"qid": "5a73977d554299623ed4ac08", "label": "supported", "reason": "Both are described as Armenian-American, indicating Armenian ancestry", "judged_by": "openai/gpt-oss-120b"}
+{"qid": "5ab514c05542991779162d72", "label": "supported", "reason": "The context states Wilmslow High School, the venue of the Wilmslow Show, is a designated Centre of Excellence.", "judged_by": "openai/gpt-oss-120b"}
+{"qid": "5add2b435542990d50227e11", "label": "supported", "reason": "Context states the film stars Saoirse Ronan and Billy Howle, indicating he will be seen opposite her.", "judged_by": "openai/gpt-oss-120b"}
+{"qid": "5a88d6df554299206df2b377", "label": "supported", "reason": "Context states Kool Kojak wrote and produced for Dr. Seuss's The Lorax, which stars Danny DeVito.", "judged_by": "openai/gpt-oss-120b"}
+{"qid": "5ae6b6065542991bbc976168", "label": "contradicted", "reason": "The context lists Luc Deveraux actors as Van Damme and Battaglia, not Scott Adkins, though Adkins starred in the listed shows.", "judged_by": "openai/gpt-oss-120b"}
+{"qid": "5ae531ee5542990ba0bbb1ff", "label": "supported", "reason": "Jack Lowden, who stars in Tommy's Honour, found success with the 2016 BBC miniseries War & Peace as stated in the context.", "judged_by": "openai/gpt-oss-120b"}
+{"qid": "5a8aa5835542996c9b8d5f4e", "label": "supported", "reason": "Context states Midnight Oil chose its name by drawing it out of a hat.", "judged_by": "openai/gpt-oss-120b"}

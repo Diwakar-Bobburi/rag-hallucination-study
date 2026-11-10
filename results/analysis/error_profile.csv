@@ -1,0 +1,3 @@
+model,answer words all in context (wrong span?),answer words not all in context (from memory?),yes/no answer
+openai/gpt-oss-20b,48,51,4
+qwen/qwen3.8-27b,91,32,4

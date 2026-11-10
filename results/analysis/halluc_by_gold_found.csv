@@ -1,0 +1,7 @@
+model,gold_found,n_judged,hallucinated,hallucination_rate,ci_low,ci_high
+openai/gpt-oss-20b,0,1,1,1.0,,
+openai/gpt-oss-20b,1,55,33,0.6,0.4385690789473684,0.7461309523809518
+openai/gpt-oss-20b,2,92,6,0.06521739130434782,0.02040816326530612,0.1276595744680851
+qwen/qwen3.8-27b,0,2,2,1.0,1.0,1.0
+qwen/qwen3.8-27b,1,50,40,0.8,0.68,0.9019607843137255
+qwen/qwen3.8-27b,2,62,3,0.04838709677419355,0.0,0.125

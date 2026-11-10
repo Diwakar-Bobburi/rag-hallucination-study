@@ -8,10 +8,13 @@ This is applied AFTER generation, to the hybrid_rerank answers, so it needs no
 new API calls. For every confidence threshold we measure what is gained (fewer
 hallucinations) and what is lost (correct answers withheld).
 
-Two confidence signals are compared:
-  top1   score of the best passage
-  top2   score of the 2nd-best passage. HotpotQA needs TWO passages, so a weak
-         2nd passage suggests the second "hop" is missing.
+Three confidence signals are compared:
+  top1            score of the best passage (retrieval confidence)
+  top2            score of the 2nd-best passage. HotpotQA needs TWO passages, so a
+                  weak 2nd passage suggests the second "hop" is missing.
+  answer_overlap  share of the answer's words that appear in the passages shown to
+                  the model (answer-grounding check; computed locally, no API).
+                  Yes/no answers can't be checked this way and get 1.0 (never withheld).
 
 To avoid tuning the threshold on the same questions we report on, questions are
 split 50/50 into dev and test: the threshold is chosen on dev, reported on test.
@@ -23,8 +26,9 @@ Definitions (per answer):
 Score used to pick the threshold: (#correct - #hallucinated) / n  (abstaining = 0)
 
 Run:  python run_abstention.py            (uses JUDGE_MODEL from config.py)
-      python run_abstention.py --judge gemma-4-31b-it
+      python run_abstention.py --judge gemma-4-31b-it [--retriever dense]
 Outputs in results/: abstention_curve.csv, abstention_summary.csv, abstention_curve.png
+(with a suffix like __dense when --retriever is not hybrid_rerank)
 """
 import argparse
 import json
@@ -34,10 +38,18 @@ import numpy as np
 import pandas as pd
 
 import config as C
-from eval.metrics import exact_match, f1, is_abstain
+from eval.metrics import exact_match, f1, is_abstain, normalize
 
 RETRIEVER = "hybrid_rerank"
-SIGNALS = ["top1", "top2"]
+SIGNALS = ["top1", "top2", "answer_overlap"]
+
+
+def answer_overlap(answer, passages):
+    words = normalize(answer).split()
+    if not words or " ".join(words) in {"yes", "no"}:
+        return 1.0
+    ctx = set(normalize(" ".join(passages)).split())
+    return sum(w in ctx for w in words) / len(words)
 
 
 def load_jsonl(path):
@@ -58,7 +70,7 @@ def auroc(pos_scores, neg_scores):
     return float((greater + 0.5 * ties) / (len(pos) * len(neg)))
 
 
-def build_frame(model, judge, retrieved):
+def build_frame(model, judge, retrieved, text):
     tag = model.replace("/", "_")
     gen = load_jsonl(C.RESULTS_DIR / f"gen_{RETRIEVER}__{tag}.jsonl")
     verdicts = {v["qid"]: v["label"] for v in load_jsonl(
@@ -70,6 +82,7 @@ def build_frame(model, judge, retrieved):
         rows.append({
             "qid": r["qid"], "model": model,
             "top1": scores[0], "top2": scores[1] if len(scores) > 1 else scores[0],
+            "answer_overlap": answer_overlap(r["answer"], [text[p] for p in r["pids"]]),
             "model_abstained": abst,
             "em": exact_match(r["answer"], r["gold"]),
             "correct": f1(r["answer"], r["gold"]) >= 0.5 and not abst,
@@ -114,13 +127,19 @@ def choose_threshold(df, signal):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--judge", default=C.JUDGE_MODEL)
+    ap.add_argument("--retriever", default="hybrid_rerank",
+                    choices=["bm25", "dense", "hybrid", "hybrid_rerank"])
     args = ap.parse_args()
+    global RETRIEVER
+    RETRIEVER = args.retriever
+    suffix = "" if RETRIEVER == "hybrid_rerank" else f"__{RETRIEVER}"
+    text = {p["pid"]: p["text"] for p in json.loads(C.CORPUS_FILE.read_text(encoding="utf-8"))}
 
     retrieved = json.loads((C.RESULTS_DIR / f"retrieved_{RETRIEVER}.json").read_text(encoding="utf-8"))
     curves, summary = [], []
 
     for model in C.LLM_MODELS:
-        df = build_frame(model, args.judge, retrieved)
+        df = build_frame(model, args.judge, retrieved, text)
         if df.empty:
             print(f"{model}: no {RETRIEVER} answers yet, skipping")
             continue
@@ -163,35 +182,35 @@ def main():
     if not summary:
         raise SystemExit("Nothing to report yet: finish hybrid_rerank generation + judging first.")
 
-    pd.DataFrame(curves).to_csv(C.RESULTS_DIR / "abstention_curve.csv", index=False)
+    pd.DataFrame(curves).to_csv(C.RESULTS_DIR / f"abstention_curve{suffix}.csv", index=False)
     table = pd.DataFrame(summary)
-    table.to_csv(C.RESULTS_DIR / "abstention_summary.csv", index=False)
+    table.to_csv(C.RESULTS_DIR / f"abstention_summary{suffix}.csv", index=False)
     pd.set_option("display.width", 220)
-    print(f"\nAbstention results on the TEST half (judge: {args.judge}):")
+    print(f"\nAbstention results on the TEST half ({RETRIEVER}, judge: {args.judge}):")
     print(table.round(3).to_string(index=False))
     print("\nauroc: how well the signal separates good from hallucinated answers (0.5 = no better than chance)")
-    plot(pd.DataFrame(curves))
+    plot(pd.DataFrame(curves), suffix)
 
 
-def plot(curves):
+def plot(curves, suffix=""):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
     fig, ax = plt.subplots(figsize=(6, 4))
-    styles = {"top1": "-", "top2": "--"}
+    styles = {"top1": "-", "top2": "--", "answer_overlap": ":"}
     for (model, signal), g in curves.groupby(["model", "signal"]):
         g = g.sort_values("coverage")
         ax.plot(g["coverage"], g["hallucination_rate"], styles[signal],
                 label=f"{model.split('/')[-1]} · {signal}")
     ax.set_xlabel("Coverage (share of questions answered)")
     ax.set_ylabel("Hallucination rate (among answered)")
-    ax.set_title("Abstaining on low retrieval confidence")
+    ax.set_title(f"Abstention by confidence signal ({RETRIEVER})")
     ax.invert_xaxis()
     ax.grid(alpha=0.3)
     ax.legend(fontsize=8)
     fig.tight_layout()
-    out = C.RESULTS_DIR / "abstention_curve.png"
+    out = C.RESULTS_DIR / f"abstention_curve{suffix}.png"
     fig.savefig(out, dpi=200)
     print(f"Saved plot: {out.relative_to(C.ROOT)}")
 

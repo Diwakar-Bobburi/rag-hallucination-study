@@ -1,6 +1,6 @@
 # Retrieval Quality and Hallucination in RAG with Small Open LLMs
 
-**Author:** Diwakar Bobburi
+**Author:** Bobburi Divakara
 
 ## Research questions
 1. How do retrieval choices (BM25, dense, hybrid, reranking) affect answer faithfulness in RAG?

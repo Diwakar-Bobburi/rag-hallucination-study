@@ -1,0 +1,274 @@
+\chapter{Results}\label{chap:results}
+
+This chapter first reports the cost of the runs (Section~\ref{sec:res-setup}) and retrieval quality
+(Section~\ref{sec:res-retrieval}). It then reports answer quality and hallucination for all conditions
+(Section~\ref{sec:res-main}), the reliability of the judge (Section~\ref{sec:res-judge}), the abstention
+rule (Section~\ref{sec:res-abstention}) and an analysis of errors (Section~\ref{sec:res-errors}).
+Section~\ref{sec:res-discussion} answers the research questions.
+
+\section{Setup}\label{sec:res-setup}
+Table~\ref{tab:cost} shows the mean size and duration of one generation call. Passages make a call longer:
+the closed-book calls are the shortest for both models. Every call ended normally, so no answer was cut off
+at the token limit. Each hallucination rate below is a share of the non-abstained answers of at most
+\val{data.eval_questions} questions, so the confidence intervals are wide and small differences should not be
+over-read.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Generation cost per question: mean total tokens and mean latency of one call, and the share
+of calls that ended normally (\texttt{finish\_reason} is \texttt{stop}).}\label{tab:cost}
+\input{generated/tab_cost}
+\end{table}
+
+\section{Retrieval Quality}\label{sec:res-retrieval}
+
+\begin{table}[htbp]
+\centering\small
+\caption{Retrieval quality on all \val{data.questions} questions and on the first
+\val{data.eval_questions}, which are the ones used for generation and judging.}\label{tab:retrieval}
+\input{generated/tab_retrieval}
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\resultfigure{fig_retrieval.png}{0.72\textwidth}
+\caption{Share of the \val{data.questions} questions with both gold passages in the top $k$
+passages.}\label{fig:retrieval}
+\end{figure}
+
+Table~\ref{tab:retrieval} and Fig.~\ref{fig:retrieval} show the results. Finding one relevant passage is much
+easier than finding both. MRR is high for every retriever (\val{ret.bm25.mrr.all} to
+\val{ret.hybrid_rerank.mrr.all} on all questions), yet hybrid + rerank, the best retriever, finds both gold
+passages in the top five for only \val{ret.hybrid_rerank.both5.all} of the questions, and BM25 for
+\val{ret.bm25.both5.all}.
+
+Two points matter for what follows. First, BM25 is clearly the weakest, so the conditions span a real
+range of retrieval quality, which RQ1 needs. Second, the \val{data.eval_questions} questions used for
+generation are not a perfect sample of the full set, and the order of dense and hybrid differs between the two:
+on all questions dense has the higher Both@5 (\val{ret.dense.both5.all} against \val{ret.hybrid.both5.all}), while
+on the first \val{data.eval_questions} hybrid has it (\val{ret.hybrid.both5.eval} against \val{ret.dense.both5.eval}).
+No ranking of dense against hybrid is drawn from a difference this small.
+
+\section{Answer Quality and Hallucination}\label{sec:res-main}
+
+\begin{table}[htbp]
+\centering\small
+\caption{Main results with judge \texttt{gemma-4-31b-it}. Abst.: answers the model itself declined. $n$: judged
+answers. Hall.: hallucination rate with its 95\,\% bootstrap interval. Contr., Unsup.: shares of contradicted and
+unsupported answers among the judged answers. Both@5 refers to the same \val{data.eval_questions} questions.}\label{tab:main}
+\resizebox{\textwidth}{!}{\input{generated/tab_main}}
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\resultfigure{fig_main.png}{\textwidth}
+\caption{Hallucination rate by condition and model with 95\,\% bootstrap intervals. The Both@5 values under the
+conditions refer to the same \val{data.eval_questions} questions.}\label{fig:main}
+\end{figure}
+
+Table~\ref{tab:main} and Fig.~\ref{fig:main} give the main results. Retrieval helps accuracy: EM rises from 0.19 and
+0.21 closed-book (\texttt{gpt-oss-20b} and \texttt{qwen3.8-27b}) to at best 0.52 and 0.66 with a retriever, and to
+0.65 and 0.73 with the oracle. Hallucination is highest for BM25 (34.1\,\% and 42.3\,\%) and lowest for the oracle
+(8.2\,\% and 6.1\,\%). The intervals of the four retrievers overlap for both models, including BM25 against dense,
+so the retrievers are not ranked. Nor does a better Both@5 translate neatly at this scale: hybrid + rerank has the
+highest Both@5 on these questions, but for \texttt{gpt-oss-20b} its hallucination rate is not below that of dense.
+
+Almost all hallucinations are unsupported, not contradicted. Of the 949 judged answers, 230 are hallucinated: 211
+unsupported and 19 contradicted. The models rarely state something that the passages conflict with; they more often
+state something that the passages do not establish. Of the 968 non-abstained answers with passages, 19 (2.0\,\%) got
+no readable verdict from the main judge and are excluded.
+
+\subsection{Effect of the Gold Passages Found}
+
+\begin{table}[htbp]
+\centering\small
+\caption{Hallucination by the number of gold passages among the five passages shown to the model (the four
+retrievers pooled; the oracle separately). No rate is given for 0 of 2, which rests on one and two answers. CI
+(answers) resamples answers and is too narrow for pooled rows; CI (questions) resamples whole
+questions.}\label{tab:gold}
+\input{generated/tab_gold}
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\resultfigure{fig_gold_found.png}{0.62\textwidth}
+\caption{Hallucination rate against the number of gold passages in the top five, with bootstrap intervals that
+resample answers. The bars for 0 of 2 rest on one and two answers and should not be interpreted.}\label{fig:gold}
+\end{figure}
+
+Table~\ref{tab:gold} and Fig.~\ref{fig:gold} hold the key result for RQ1. With both gold passages in the top five,
+7.0\,\% and 4.5\,\% of the answers are hallucinated, in line with the oracle. With only one, the rates are 63.1\,\%
+and 77.7\,\%. Retrieval found neither passage in only three cases, too few to interpret.
+
+Because the table pools four retrievers, one question can appear up to four times. Resampling whole questions widens
+the intervals but does not close the gap (Table~\ref{tab:gold}). Two further checks address whether questions with a
+missed hop are simply harder. First, some of them are: under the oracle, questions that had a one-gold retrieval reach
+15.7\,\% and 8.5\,\% hallucination, against 5.1\,\% and 3.8\,\% for questions that had a two-gold retrieval. That
+difference is far smaller than the one in Table~\ref{tab:gold}. Second, on questions where the retrievers disagree,
+each question can be compared with itself. On these 32 and 40 questions, hallucination is 64.1\,\% and 78.3\,\% with
+one gold passage and 10.4\,\% and 5.0\,\% with two. This remains an observation and not a controlled experiment, but
+difficulty alone does not explain the effect.
+
+The result is partly built into the definition: with a hop missing, the passages can rarely support the answer. What
+the data add is how the models behave in that state. The prompt offered no explicit way to decline, but it did tell
+the models to use only the context, and they rarely refused: self-abstention never exceeds 11\,\% in any condition and
+is 1--2\,\% for \texttt{qwen3.8-27b} when it is given passages. A missing hop usually leads to an answer anyway.
+
+\subsection{Correctness against Faithfulness}
+
+\begin{table}[htbp]
+\centering\small
+\caption{Counts of correct (F1 $\geq$ 0.5) or incorrect answers that were labelled supported or
+hallucinated.}\label{tab:correctness}
+\input{generated/tab_correctness}
+\end{table}
+
+Faithfulness and correctness come apart (Table~\ref{tab:correctness}). Of the 230 hallucinated answers, 124 (54\,\%)
+are nevertheless correct by the F1 threshold (57 of 103 for \texttt{gpt-oss-20b}, 67 of 127 for \texttt{qwen3.8-27b}).
+This fits the models filling a missing hop from what they already know, or guessing well, although these counts
+cannot separate the two. In the other direction, 110 of 719 supported answers (15\,\%) are incorrect. A check for
+faithfulness cannot replace a check for accuracy, nor the reverse.
+
+\subsection{Question Type}
+
+\begin{table}[htbp]
+\centering\small
+\caption{EM and hallucination rate for bridge and comparison questions. Only
+\val{data.eval_comparison} of the \val{data.eval_questions} questions are comparison
+questions.}\label{tab:qtype}
+\input{generated/tab_qtype}
+\end{table}
+
+Pooled across the five conditions with passages, comparison questions hallucinate less than bridge questions
+(11.7\,\% against 25.1\,\% for \texttt{gpt-oss-20b}, 9.7\,\% against 30.7\,\% for \texttt{qwen3.8-27b}). This does not
+hold for BM25, where comparison questions reach 40.0\,\% and 38.1\,\% (Table~\ref{tab:qtype}). There are only
+\val{data.eval_comparison} comparison questions per condition, so this is suggestive only.
+
+\section{Reliability of the Judge}\label{sec:res-judge}
+
+\begin{table}[htbp]
+\centering\small
+\caption{Agreement between \texttt{gemma-4-31b-it} and \texttt{openai/gpt-oss-120b}.}\label{tab:agreement}
+\input{generated/tab_agreement}
+\end{table}
+
+\begin{table}[htbp]
+\centering\small
+\caption{Labels of the two judges (rows: main judge; columns: second judge).}\label{tab:confusion}
+\input{generated/tab_confusion}
+\end{table}
+
+\begin{table}[htbp]
+\centering\small
+\caption{Agreement of each judge with the manual labels of the author. The sample is balanced by the main judge's
+verdict, so these values are not an accuracy estimate for all answers.}\label{tab:human}
+\input{generated/tab_human}
+\end{table}
+
+\textbf{Between the judges.} The two judges agree on 92.3\,\% of 663 shared answers with binary labels ($\kappa=0.81$)
+and on 90.5\,\% with three labels ($\kappa=0.77$; Tables~\ref{tab:agreement} and~\ref{tab:confusion}). Agreement between
+models does not show that either is right, and the second judge shares a family with one generator.
+
+\textbf{Human check.} The author labelled all 100 answers of the shuffled sheet (Table~\ref{tab:human}). Agreement
+with the main judge is 77.0\,\% with binary labels ($\kappa=0.54$) and 73.0\,\% with three labels ($\kappa=0.48$), which
+is moderate and clearly lower than between the two judges, although the balanced sample means the values are not
+directly comparable. The disagreements are one-sided: of 23 binary disagreements with the main judge, the judge called
+20 answers hallucinated where the author called them supported, and only 3 the other way round. Reweighting the
+sample to the observed rate gives about 19.1\,\% hallucination overall against the judge's 24.2\,\%. The share
+of hallucinated labels is similar in the first 80 answers (26) and the last 20 (7).
+
+There are two readings of this gap, and the data cannot separate them. The judge may be too strict: it sometimes
+faults an answer for wording in the question. The author may also be too lenient: in 10 of those 20 cases, both judges
+called the answer hallucinated. The absolute rates in Table~\ref{tab:main} are therefore
+uncertain and possibly too high. The main result does not depend on this: using the author's labels, 26 of 42 answers
+with one gold passage are hallucinated, against 3 of 42 with both (about 54\,\% and 4\,\% after reweighting within each
+group). These subsets are small and balanced, so they support the direction and size of the gap, not exact values.
+
+\section{Abstention}\label{sec:res-abstention}
+
+\begin{table}[htbp]
+\centering\footnotesize
+\caption{Abstention on held-out answers, as the mean over 200 random development/test splits (about 49 answers per test
+half). AUROC is computed on all answers of the model. Cover.: coverage. Hall., Acc.: hallucination rate and accuracy,
+before and after abstention; SD over the overlapping splits in brackets, which is not a confidence interval. Rem.:
+hallucinations withheld per test half. Lost: correct answers withheld per test half. The ``before'' values are averaged
+over test halves, so they differ slightly from Table~\ref{tab:main}.}\label{tab:abstention}
+\resizebox{\textwidth}{!}{\input{generated/tab_abstention}}
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\resultfigure{fig_abstention.png}{\textwidth}
+\caption{AUROC of each signal. The vertical axis starts at 0.3; the dashed line marks chance.}\label{fig:auroc}
+\end{figure}
+
+\textbf{Retrieval confidence does not work.} The top1 score is near chance everywhere (AUROC 0.46--0.54) and removes
+almost no hallucinations (Table~\ref{tab:abstention}, Fig.~\ref{fig:auroc}). The top2 score ranges from 0.53 to 0.68. It
+is better in one case (\texttt{gpt-oss-20b} with dense), but the thresholds chosen for it keep most answers and change
+hallucination by little. A likely reason, which was not tested directly, is that the score reflects how well a passage
+matches the question, and a strong match to one hop says little about whether the other was found.
+
+\textbf{The grounding check helps, unevenly.} The answer\_overlap signal reaches an AUROC of 0.75--0.77 for
+\texttt{gpt-oss-20b} and 0.60--0.63 for \texttt{qwen3.8-27b}. Its best case is \texttt{gpt-oss-20b} with dense, where
+hallucination falls from 21.3\,\% to 11.0\,\% at 74.9\,\% coverage. The cost is real: per test half it withholds 5.5
+hallucinations and 2.8 correct answers, and accuracy falls from 69.6\,\% to 63.9\,\%. For \texttt{qwen3.8-27b} the gain is
+much smaller (28.2\,\% to 23.2\,\% with dense).
+
+\section{Error Analysis}\label{sec:res-errors}
+
+\begin{table}[htbp]
+\centering\small
+\caption{Causes of \val{cfg.n_errors} hallucinated answers from the BM25 and dense conditions, assigned by the
+author.}\label{tab:errors}
+\input{generated/tab_errors}
+\end{table}
+
+\textbf{Where the words come from.} For \texttt{qwen3.8-27b}, all words of the answer appear in the context in 91 of 127
+hallucinated answers (72\,\%), against 48 of 103 (47\,\%) for \texttt{gpt-oss-20b}. This suggests that Qwen more often
+answers with a span from the passages that they do not back, which a lexical check cannot see. It would also explain
+why the grounding check works better for the model whose hallucinations more often contain words from outside the
+context.
+
+\textbf{Causes.} Table~\ref{tab:errors} shows the causes of \val{cfg.n_errors} hallucinated answers. Causes overlap. The
+author assigned each answer one of the five causes shown in the labelling tool.
+The author used wrong passage retrieved for 8 answers, all with one gold passage in the top five. The author never chose answer from memory.
+
+A coarser reading is that the author attributes 26 of the 30
+answers to evidence missing from the context (one hop missing or wrong passage retrieved). Of the 30 answers, 27 had one gold passage in the top
+five, including all 26.
+
+The judge-error count does not fit the human check. The author chose judge error for 1 of the 30 answers, but on the
+label sheet called 20 of the 50 answers that the judge called hallucinated supported. Six answers are on both sheets: the
+author labelled 3 of them supported, and gave only 1 of those 3 the cause judge error. The cause step showed the judge's
+reason, which may have influenced the author, so the author's count of judge errors may be too low.
+
+Three real examples show the pattern. Asked in what year Philip Pullman's book was put into audio, a model answered
+``1995'': the passages give that as the publication year and do not mention the audio version (wrong passage retrieved). Asked
+what year the subject of \emph{Fatal Vision} was convicted, a model gave the correct ``1979'', a year that appears nowhere
+in the passages (one hop missing). Asked what Iqbal F. Qadir was on during an attack, a model answered ``Vice-Admiral'',
+although the passage says that he was part of a flotilla (passage misread).
+
+\section{Discussion}\label{sec:res-discussion}
+
+\textbf{RQ1: How does retrieval quality affect hallucination?}
+Whether retrieval found every hop matters much more than which retriever was used. With both gold passages in the top
+five, 7.0\,\% and 4.5\,\% of the answers are hallucinated; with one, 63.1\,\% and 77.7\,\%. The gap holds when a question is
+compared with itself and when the author's labels replace the judge's. Differences between the retrievers are smaller and
+their intervals overlap. For multi-hop questions this suggests tracking Both@$k$ alongside MRR, since MRR was high here even
+where a hop was often missing. Improving second-hop recall, for example with iterative retrieval, looks like a promising
+target, although it was not tested here.
+
+\textbf{RQ2: Can a training-free rule reduce hallucination without losing many correct answers?}
+Yes, but not with the signal that pipelines most readily have, and not without a cost. Retrieval scores should not be
+assumed to indicate whether an answer is supported: the top1 score is near chance. The grounding check needs only string
+operations after generation, but its benefit depends on the model, and it can catch only answers with words from outside
+the context. It costs correct answers, partly because 54\,\% of the hallucinated answers are correct by F1: withholding them
+improves faithfulness at the expense of accuracy. The rule is training-free but not label-free, because choosing $\tau$
+needs about 50 labelled answers.
+
+\textbf{What this means in practice.}
+A multi-hop RAG system should measure whether all the evidence was retrieved, not only whether something relevant was. A
+high retrieval score is no reason to trust an answer. A simple grounding check is worth trying where a withheld answer is
+cheaper than an unsupported one, but its value should be measured for the model in use. Self-RAG and CRAG were not run on
+this data, so they are compared here only in what they require: they need fine-tuning, and the rule studied here does not.
+The limitations of these conclusions are discussed in Section~\ref{sec:limitations}.

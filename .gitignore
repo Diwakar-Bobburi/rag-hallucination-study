@@ -10,5 +10,31 @@ data/*.faiss
 data/*.npy
 results/retrieved_*.json
 results/*.jsonl
+!results/gen_*.jsonl
 !data/.gitkeep
 !results/.gitkeep
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.blg
+paper/*.bbl
+paper/*.fls
+paper/*.fdb_latexmk
+
+# local AI-assistant context (not for GitHub)
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+
+# LaTeX build files of the thesis
+thesis/*.aux
+thesis/*.log
+thesis/*.out
+thesis/*.toc
+thesis/*.lof
+thesis/*.lot
+thesis/*.blg
+thesis/*.bbl
+thesis/*.fls
+thesis/*.fdb_latexmk
+thesis/__pycache__/

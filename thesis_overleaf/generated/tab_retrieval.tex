@@ -1,0 +1,11 @@
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+ & \multicolumn{3}{c}{All questions} & \multicolumn{3}{c}{Questions used for generation} \\
+Retriever & Recall@5 & Both@5 & MRR & Recall@5 & Both@5 & MRR \\
+\midrule
+BM25 & 0.696 & 0.428 & 0.865 & 0.720 & 0.470 & 0.874 \\
+Dense & 0.826 & 0.666 & 0.918 & 0.820 & 0.640 & 0.919 \\
+Hybrid & 0.812 & 0.630 & 0.916 & 0.835 & 0.670 & 0.900 \\
+Hybrid + rerank & 0.834 & 0.670 & 0.948 & 0.855 & 0.710 & 0.939 \\
+\bottomrule
+\end{tabular}

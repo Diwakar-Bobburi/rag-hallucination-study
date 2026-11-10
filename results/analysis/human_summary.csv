@@ -1,0 +1,2 @@
+n,n_questions,judge_halluc_in_sample,human_halluc_in_sample,reader_halluc_in_sample,judge_h_human_ok,judge_ok_human_h,human_ok_all_three_models_h,human_agrees_on_judge_halluc,human_flags_judge_supported,judge_rate,reweighted_rate,human_reader_agree_binary,human_reader_kappa_binary
+100,67,50,33,42,20,3,10,0.6,0.06,0.24236037934668073,0.19087460484720759,0.77,0.5135363790186126

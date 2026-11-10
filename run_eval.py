@@ -95,6 +95,10 @@ def run_judge(rows, gen_file, questions, text, llm, judge_model, workers=1):
                     continue
                 except CancelledError:
                     continue
+                except Exception as err:  # one bad request must not crash the whole run
+                    print(f"\n    skipped one answer ({type(err).__name__}); "
+                          "it will be retried next run")
+                    continue
                 cache[v["qid"]] = v
                 f.write(json.dumps(v, ensure_ascii=False) + "\n")
                 f.flush()

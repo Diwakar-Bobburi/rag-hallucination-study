@@ -1,0 +1,5 @@
+model,qtype,n_judged,halluc
+openai/gpt-oss-20b,bridge,362,0.2513812154696133
+openai/gpt-oss-20b,comparison,103,0.11650485436893204
+qwen/qwen3.8-27b,bridge,381,0.30708661417322836
+qwen/qwen3.8-27b,comparison,103,0.0970873786407767

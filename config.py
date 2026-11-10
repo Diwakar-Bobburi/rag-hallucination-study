@@ -45,7 +45,6 @@ MODEL_PARAMS = {
 }
 
 # Evaluation (Step 6)
-# Judge = a larger model with its own Groq daily limit, separate from the two
-# models being tested. Limitation to note in the paper: it shares a family with
-# gpt-oss-20b (possible self-preference bias); can be swapped for Gemini later.
-JUDGE_MODEL = "gemini-3.6-flash"
+# Main judge: Gemma 4 31B (Google), a different model family from both generators.
+# Second judge (agreement check only): openai/gpt-oss-120b.
+JUDGE_MODEL = "gemma-4-31b-it"

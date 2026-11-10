@@ -1,0 +1,20 @@
+\begin{tabular}{@{}lllrrrrrrrr@{}}
+\toprule
+ &  &  &  &  & \multicolumn{2}{c}{Hall.\,\%} &  &  & \multicolumn{2}{c}{Acc.\,\%} \\
+Retriever & Model & Signal & AUROC & Cover.\,\% & Before & After (SD) & Rem. & Lost & Before & After \\
+\midrule
+Hybrid + rerank & gpt-oss-20b & top1 & 0.50 & 95.9 & 25.4 & 25.9 (4.1) & 0.0 & 0.4 & 71.4 & 70.6 \\
+Hybrid + rerank & gpt-oss-20b & top2 & 0.57 & 93.9 & 25.4 & 24.3 (4.5) & 1.0 & 1.5 & 71.4 & 68.3 \\
+Hybrid + rerank & gpt-oss-20b & answer\_overlap & 0.75 & 81.8 & 25.4 & 17.1 (4.9) & 5.3 & 3.2 & 71.4 & 65.0 \\
+Hybrid + rerank & qwen3.8-27b & top1 & 0.48 & 96.3 & 25.2 & 25.2 (4.5) & 0.2 & 0.2 & 77.3 & 76.9 \\
+Hybrid + rerank & qwen3.8-27b & top2 & 0.54 & 93.8 & 25.2 & 25.0 (4.4) & 0.6 & 1.4 & 77.3 & 74.4 \\
+Hybrid + rerank & qwen3.8-27b & answer\_overlap & 0.60 & 91.5 & 25.2 & 22.3 (5.0) & 2.0 & 1.5 & 77.3 & 74.3 \\
+\midrule
+Dense & gpt-oss-20b & top1 & 0.54 & 89.1 & 21.3 & 21.4 (4.5) & 0.2 & 1.1 & 69.6 & 67.5 \\
+Dense & gpt-oss-20b & top2 & 0.68 & 86.0 & 21.3 & 19.2 (5.3) & 1.4 & 1.7 & 69.6 & 66.2 \\
+Dense & gpt-oss-20b & answer\_overlap & 0.77 & 74.9 & 21.3 & 11.0 (4.9) & 5.5 & 2.8 & 69.6 & 63.9 \\
+Dense & qwen3.8-27b & top1 & 0.46 & 98.0 & 28.2 & 28.4 (4.7) & 0.0 & 0.5 & 79.0 & 78.1 \\
+Dense & qwen3.8-27b & top2 & 0.53 & 96.2 & 28.2 & 27.7 (4.9) & 0.6 & 1.1 & 79.0 & 76.7 \\
+Dense & qwen3.8-27b & answer\_overlap & 0.63 & 90.2 & 28.2 & 23.2 (5.5) & 3.4 & 2.3 & 79.0 & 74.3 \\
+\bottomrule
+\end{tabular}

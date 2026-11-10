@@ -1,0 +1,5 @@
+model,gold_found_top5,n_questions,oracle_halluc
+openai/gpt-oss-20b,1,51,0.1568627450980392
+openai/gpt-oss-20b,2,79,0.05063291139240506
+qwen/qwen3.8-27b,1,59,0.0847457627118644
+qwen/qwen3.8-27b,2,79,0.0379746835443038

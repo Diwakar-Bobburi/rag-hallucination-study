@@ -1,0 +1,31 @@
+id,error_type,note
+e01,one hop missing,song found; its singer not stated; Liam taken from the band line-up
+e02,one hop missing,no Blackzilians passage; name taken from a middleweight list
+e03,answer from memory,the spin-off source is not in the passages and the answer is not either
+e04,answer from memory,birth year absent; correct but not from the passages
+e05,answer from memory,territories absent; correct but not from the passages
+e06,one hop missing,Jerome Bernard passage absent; model answered None
+e07,one hop missing,circuit court passage absent; law firm taken from the one passage found
+e08,one hop missing,audio year absent; publication year used instead
+e09,one hop missing,Edberg passage absent; yes/no answer
+e10,judge error,the passage names Newman; judge objected to the question's wording about other scores
+e11,one hop missing,audio year absent; publication year used instead
+e12,one hop missing,Crespo passage absent; the count comes from the Serie A passage
+e13,judge error,the passage backs Rafael as the younger brother; judge read WBO as describing him
+e14,one hop missing,middle name absent; first name used instead
+e15,answer from memory,spin-off source absent; correct but not from the passages
+e16,passage misread,both gold passages shown; the passage says flotilla; model gave his rank
+e17,one hop missing,bankruptcy year absent; 2001 appears for another event
+e18,answer from memory,the composer's religion is absent and so is the answer
+e19,one hop missing,song and singer are not linked in the passages
+e20,judge error,the passage names Newman; judge objected to the question's wording about other scores
+e21,one hop missing,Popular Science magazine passage absent; yes-style comparison from one side
+e22,answer from memory,Jodl passage absent and the answer is not in the passages
+e23,one hop missing,Crespo passage absent; the count comes from the Serie A passage
+e24,one hop missing,middle name absent; model answered None
+e25,judge error,borderline; family is backed; judge objected only to the added name Poaceae
+e26,one hop missing,Black Movie Awards absent; 2013 taken from another hosting job
+e27,one hop missing,the Lorax film passage absent; title taken from the Kool Kojak passage
+e28,one hop missing,University of Debrecen passage absent; yes/no answer
+e29,one hop missing,the film is linked to Lewis only; no link to Jerome Bernard
+e30,answer from memory,conviction year absent; correct but not from the passages

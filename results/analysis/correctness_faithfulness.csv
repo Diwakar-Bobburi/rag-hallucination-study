@@ -1,0 +1,5 @@
+model,retriever,n_judged,correct_supported,correct_hallucinated,incorrect_supported,incorrect_hallucinated
+openai/gpt-oss-20b,bm25,58,28,12,9,9
+openai/gpt-oss-20b,dense,90,58,10,13,9
+qwen/qwen3.8-27b,bm25,97,49,21,7,20
+qwen/qwen3.8-27b,dense,17,12,2,1,2

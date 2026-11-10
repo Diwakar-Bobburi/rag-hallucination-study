@@ -1,0 +1,4 @@
+main: gemma-4-31b-it,supported,contradicted,unsupported
+supported,454,4,13
+contradicted,2,5,7
+unsupported,32,5,141

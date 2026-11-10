@@ -1,0 +1,71 @@
+\chapter{Conclusion}\label{chap:conclusion}
+
+\section{Summary}
+This thesis asked how retrieval quality affects hallucination in RAG with small open-weight language
+models, and whether a rule that needs no training can reduce it. Two models answered
+\val{data.eval_questions} multi-hop HotpotQA questions under six conditions, from no retrieval to perfect
+retrieval, over a corpus of \val{data.passages} passages. A language-model judge labelled the answers as
+supported, contradicted or unsupported, and it was checked against a second judge and the author's labels on 100
+answers.
+
+Retrieval quality varied widely: the share of all \val{data.questions} questions with both gold passages in the
+top five ranged from \val{ret.bm25.both5.all} for BM25 to \val{ret.hybrid_rerank.both5.all} for hybrid retrieval with
+reranking.
+
+For RQ1, whether retrieval found every hop matters much more than which retriever was used. With both gold passages in
+the top five, 7.0\,\% and 4.5\,\% of the answers of the two models are hallucinated; with only one, 63.1\,\% [resampling
+questions: 48.4, 77.0] and 77.7\,\% [65.7, 88.3]. The gap holds when a question is compared with itself (64.1\,\% against
+10.4\,\% and 78.3\,\% against 5.0\,\%) and when the author's labels replace the judge's (26 of 42 against 3 of 42). The
+intervals of the four retrievers overlap. Agreement with the human check was only moderate ($\kappa=0.54$), and it suggests
+that the absolute rates may be too high (about 19.1\,\% overall against 24.2\,\%).
+
+For RQ2, retrieval confidence does not work: the top1 score is near chance (AUROC 0.46--0.54). A simple check of whether
+the answer's words appear in the passages does better (AUROC 0.75--0.77 for \texttt{gpt-oss-20b}, 0.60--0.63 for
+\texttt{qwen3.8-27b}). In its best case it lowers hallucination from 21.3\,\% to 11.0\,\% at 74.9\,\% coverage, at a cost in
+correct answers, and it helps much less for the model that more often picks unsupported spans from the context.
+
+\section{Limitations}\label{sec:limitations}
+The conclusions are limited in several ways.
+\begin{itemize}
+\item \textbf{Few questions.} Generation and judging use \val{data.eval_questions} questions per condition,
+  because of the free API limits, so intervals are wide and small differences may not be real. The abstention
+  results rest on small test halves.
+\item \textbf{One sample of questions.} Retrieval on the first \val{data.eval_questions} questions differs from
+  retrieval on all \val{data.questions} (Section~\ref{sec:res-retrieval}), so the sample may not represent the full
+  question set.
+\item \textbf{An LLM as judge.} The hallucination labels come from a language model, which can make mistakes
+  \cite{es2024ragas,niu2024ragtruth}, and every hallucination rate depends on them. The second judge shares a family with
+  one generator. The human check covers 100 answers by one rater who knew the study's results, and agreement with it was only
+  moderate. The causes were assigned by one rater who saw the judge's reason, so they are not independent.
+\item \textbf{Faithfulness is not truth.} A supported answer is backed by the passages, which does not make it
+  correct, and an unsupported answer may still be true.
+\item \textbf{Association, not cause.} The link between gold passages found and hallucination is observed, not
+  controlled, as questions that are hard to retrieve for may also be harder to answer. The same-question check reduces this
+  concern, but it covers only questions where the retrievers disagree.
+\item \textbf{Different context sizes.} The oracle condition shows the model two passages and the retrievers show
+  five, so oracle results combine the effect of better evidence with that of a shorter context. Passage order also
+  follows the retriever, and order can affect models \cite{liu2024lost}.
+\item \textbf{One data set and two models.} HotpotQA is built from Wikipedia with short answers, and every
+  question here is multi-hop. The results need not carry over to other domains, long answers or other models.
+\item \textbf{Hosted models.} The models are reached through third-party APIs and may change over time.
+\item \textbf{Abstention was applied after generation.} The rule is evaluated on saved answers, on test halves of about 49
+  answers. The threshold needs labelled answers and is chosen for one objective, which weighs a correct answer and a
+  hallucination equally. The lexical check suits short answers and may not carry over to long ones.
+\item \textbf{Abstained answers are excluded} from the hallucination rate, and abstention rates differ between conditions (up
+  to 11\,\%), which can slightly affect comparisons.
+\end{itemize}
+
+\section{Future Work}
+Several directions follow from the results and the limitations.
+\begin{itemize}
+\item \textbf{More questions.} Running all \val{data.questions} questions would narrow the intervals and allow a
+  larger test half for the abstention rule.
+\item \textbf{Second-hop retrieval.} Since a missing hop goes with most hallucinations, retrieval that targets the second hop,
+  for example iterative retrieval, should be tested directly.
+\item \textbf{More confidence signals.} Signals that can catch unsupported spans from the context, which a lexical check cannot,
+  could be compared with the signals tested here.
+\item \textbf{Other prompts and context sizes.} Offering ``I don't know'' as an option in the prompt, forcing
+  citations, or varying the number of passages would show how much can be gained without any retrieval signal.
+\item \textbf{Broader settings.} Other data sets, longer answers and other models would test how general the
+  findings are.
+\end{itemize}

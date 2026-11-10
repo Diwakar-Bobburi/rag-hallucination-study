@@ -1,0 +1,11 @@
+model,retriever,incorrect_supported,incorrect_halluc,correct_supported,correct_halluc
+openai/gpt-oss-20b,bm25,14,13,44,17
+openai/gpt-oss-20b,dense,13,9,58,10
+openai/gpt-oss-20b,hybrid,13,10,58,12
+openai/gpt-oss-20b,hybrid_rerank,16,10,56,14
+openai/gpt-oss-20b,oracle,14,4,76,4
+qwen/qwen3.8-27b,bm25,7,20,49,21
+qwen/qwen3.8-27b,dense,6,13,63,14
+qwen/qwen3.8-27b,hybrid,7,15,61,14
+qwen/qwen3.8-27b,hybrid_rerank,9,11,63,13
+qwen/qwen3.8-27b,oracle,11,1,81,5

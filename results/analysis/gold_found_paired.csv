@@ -1,0 +1,3 @@
+model,n_questions,halluc_one_gold,halluc_two_gold
+openai/gpt-oss-20b,32,0.640625,0.10416666666666666
+qwen/qwen3.8-27b,40,0.7833333333333333,0.05
